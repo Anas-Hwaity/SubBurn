@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "subburn"
+version = "2.8.0"
+description = "Burn subtitles into video with preview, watermarking, transcription, and batch processing."
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]
+authors = [{name = "Anas Al Hwaity"}]
+dependencies = [
+  "fonttools==4.63.0",
+  "regex==2026.5.9",
+]
+
+[project.optional-dependencies]
+full = [
+  "tkinterdnd2==0.6.3",
+  "faster-whisper==1.2.1",
+  "ctranslate2==4.8.2",
+  "huggingface-hub==1.31.0",
+]
+
+[project.gui-scripts]
+subburn = "subburn.app:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
