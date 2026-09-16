@@ -1,0 +1,36 @@
+; SubBurn Windows installer template.
+; Native build acceptance is required before release. This file intentionally does not
+; embed signing credentials or third-party FFmpeg/model payloads.
+#define AppVersion "@SUBBURN_VERSION@"
+#define AppSourceDir "@SUBBURN_APP_DIR@"
+
+[Setup]
+AppId={{7D07F48E-8EDB-4E3D-8BA6-C63FE7A9FB80}
+AppName=SubBurn
+AppVersion={#AppVersion}
+AppVerName=SubBurn
+UninstallDisplayName=SubBurn
+DefaultDirName={localappdata}\Programs\SubBurn
+DefaultGroupName=SubBurn
+PrivilegesRequired=lowest
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+OutputBaseFilename=SubBurn-Setup
+Compression=lzma2
+SolidCompression=yes
+WizardStyle=modern
+DisableProgramGroupPage=yes
+SetupLogging=yes
+
+[Files]
+Source: "{#AppSourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{autoprograms}\SubBurn"; Filename: "{app}\SubBurn.exe"; WorkingDir: "{app}"
+Name: "{userdesktop}\SubBurn"; Filename: "{app}\SubBurn.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+
+[Tasks]
+Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"
+
+[Run]
+Filename: "{app}\SubBurn.exe"; Description: "Launch SubBurn"; Flags: nowait postinstall skipifsilent

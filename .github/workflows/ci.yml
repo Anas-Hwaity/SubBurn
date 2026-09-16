@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  source-matrix:
+    name: Source · ${{ matrix.os }} · Python ${{ matrix.python }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.10', '3.11', '3.12', '3.13']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e .
+      - run: python scripts/check_release_tree.py
+      - run: python scripts/check_public_repo.py
+      - run: python scripts/check_source_secrets.py
+      - run: python scripts/check_distribution_contract.py
+      - run: python scripts/runtime_provenance_inventory.py --output runtime-provenance.json
+      - run: python -m compileall -q src scripts tests
+      - run: python -c "import subburn.app as a; assert a.APP_NAME == 'SubBurn'"
+
+  browser-loopback-e2e:
+    name: Browser · live localhost E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg xvfb fonts-dejavu-core
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e .
+      - run: python -m pip install playwright==1.57.0
+      - run: python -m playwright install --with-deps chromium
+      - run: python scripts/run_browser_e2e.py
+
+  linux-smoke:
+    name: Linux real-FFmpeg smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg xvfb fonts-dejavu-core
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e .
+      - run: python scripts/run_linux_smoke.py
+
+  reproducible-artifacts:
+    name: Reproducible wheel + sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: '0.10.0'
+          enable-cache: false
+      - run: python -m pip install setuptools==82.0.1
+      - shell: bash
+        run: |
+          set -euo pipefail
+          epoch="$(git log -1 --pretty=%ct)"
+          for n in 1 2; do
+            root="$RUNNER_TEMP/build-$n"
+            rm -rf "$root"
+            cp -a . "$root"
+            rm -rf "$root/.git" "$root/build" "$root/dist" "$root/src"/*.egg-info
+            find "$root" -type d -name __pycache__ -prune -exec rm -rf {} +
+            mkdir -p "$root/dist"
+            (cd "$root" && SOURCE_DATE_EPOCH="$epoch" uv build --no-build-isolation --clear -o dist .)
+            sdist="$(find "$root/dist" -name '*.tar.gz' -print -quit)"
+            wheel="$(find "$root/dist" -name '*.whl' -print -quit)"
+            python "$root/scripts/canonicalize_sdist.py" "$sdist" --epoch "$epoch"
+            python "$root/scripts/verify_release_artifacts.py" --root "$root" --wheel "$wheel" --sdist "$sdist" --epoch "$epoch"
+          done
+          cmp "$RUNNER_TEMP"/build-1/dist/*.whl "$RUNNER_TEMP"/build-2/dist/*.whl
+          cmp "$RUNNER_TEMP"/build-1/dist/*.tar.gz "$RUNNER_TEMP"/build-2/dist/*.tar.gz

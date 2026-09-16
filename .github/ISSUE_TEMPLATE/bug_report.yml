@@ -1,0 +1,84 @@
+name: Bug report
+description: Report a reproducible SubBurn defect
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include credentials, private media, private paths, or sensitive diagnostics. Security vulnerabilities belong in GitHub private vulnerability reporting, not this form.
+  - type: input
+    id: version
+    attributes:
+      label: SubBurn version or commit
+      placeholder: e.g. 2.8.0.dev0 or commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installation type
+      options:
+        - Source checkout
+        - Python wheel
+        - Other / development package
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Windows 11 24H2, Ubuntu 24.04
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: e.g. 3.13.7
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Relevant environment
+      description: FFmpeg/ffprobe version, CPU/GPU, encoder, subtitle format, install/runtime details. Do not paste private paths.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Minimal reproduction
+      description: Use generated or redistributable fixtures whenever possible.
+      placeholder: |
+        1. Open ...
+        2. Select ...
+        3. Start ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics or logs
+      description: Redact usernames, private paths, URLs with credentials, tokens, and private media metadata.
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmation
+      options:
+        - label: I reproduced this on the stated version.
+          required: true
+        - label: I removed secrets/private data from this report.
+          required: true
+        - label: This is not a vulnerability requiring private disclosure.
+          required: true

@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "subburn"
+version = "2.8.0.dev0"
+description = "Local-first subtitle hardburning, styling, transcription, preview, watermarking, and batch encoding."
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]
+authors = [{name = "Anas Al Hwaity"}]
+keywords = ["subtitles", "ffmpeg", "video", "transcription", "tkinter", "accessibility"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Win32 (MS Windows)",
+  "Environment :: X11 Applications",
+  "Intended Audience :: End Users/Desktop",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Video",
+]
+dependencies = [
+  "fonttools>=4.63.0,<5",
+  "regex>=2026.5.9,<2027",
+]
+
+[project.optional-dependencies]
+dragdrop = ["tkinterdnd2>=0.6.3,<0.7"]
+transcription = [
+  "faster-whisper==1.2.1",
+  "ctranslate2==4.8.2",
+  "huggingface-hub==1.31.0",
+]
+full = [
+  "tkinterdnd2>=0.6.3,<0.7",
+  "faster-whisper==1.2.1",
+  "ctranslate2==4.8.2",
+  "huggingface-hub==1.31.0",
+]
+
+[project.gui-scripts]
+subburn = "subburn.app:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
